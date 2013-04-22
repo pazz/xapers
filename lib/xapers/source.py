@@ -1,5 +1,3 @@
-import os
-import sys
 import re
 from urlparse import urlparse
 
@@ -8,14 +6,17 @@ import xapers.bibtex
 
 ##################################################
 
+
 class SourceError(Exception):
     """Base class for Xapers source exceptions."""
     def __init__(self, msg):
         self.msg = msg
+
     def __str__(self):
         return self.msg
 
 ##################################################
+
 
 class Source():
     source = None
@@ -35,12 +36,16 @@ class Source():
             return 'http://%s/%s' % (self.netloc, self.id)
 
     def match(self, netloc, path):
-        """Return True if netloc/path belongs to this source and a sid can be determined."""
+        """
+        Return True if netloc/path belongs to this source and a sid can be
+        determined.
+        """
 
     def get_bibtex(self):
         """Download source bibtex, and return as string."""
 
 ##################################################
+
 
 def list_sources():
     """List all available source modules."""
@@ -52,12 +57,14 @@ def list_sources():
         sources.append(s)
     return sources
 
+
 def _load_source(source):
     try:
         mod = __import__('xapers.sources.' + source, fromlist=['Source'])
         return getattr(mod, 'Source')
     except ImportError:
         raise SourceError("Unknown source '%s'." % source)
+
 
 def get_source(string):
     """Return Source class object for URL or source identifier string. """
@@ -87,6 +94,7 @@ def get_source(string):
         smod = _load_source(source)(oid)
 
     return smod
+
 
 def scan_for_sources(file):
     """Scan document file and return a list of source strings found
