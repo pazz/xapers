@@ -29,15 +29,18 @@ from documents import Documents, Document
 
 ##################################################
 
+
 class DatabaseError(Exception):
     """Base class for Xapers database exceptions."""
     def __init__(self, msg, code):
         self.msg = msg
         self.code = code
+
     def __str__(self):
         return self.msg
 
 ##################################################
+
 
 class Database():
     """Represents a Xapers database"""
@@ -50,8 +53,8 @@ class Database():
 
         # FIXME: use this for doc mime type
         'type': 'T',
-        }
-            
+    }
+
     BOOLEAN_PREFIX_EXTERNAL = {
         'id': 'Q',
         'key': 'XBIB|',
@@ -59,14 +62,14 @@ class Database():
         'tag': 'K',
 
         'year': 'Y',
-        }
+    }
 
     PROBABILISTIC_PREFIX = {
         'title': 'S',
         't': 'S',
         'author': 'A',
         'a': 'A',
-        }
+    }
 
     # FIXME: need to set the following value fields:
     # publication date
@@ -101,18 +104,24 @@ class Database():
             if create:
                 if os.path.exists(self.root):
                     if os.listdir(self.root) and not force:
-                        raise DatabaseError('Uninitialized Xapers root directory exists but is not empty.', 1)
+                        msg = 'Uninitialized Xapers root directory '\
+                            'exists but is not empty.'
+                        raise DatabaseError(msg, 1)
                 os.makedirs(xapers_path)
             else:
                 if os.path.exists(self.root):
-                    raise DatabaseError("Xapers directory '%s' does not contain database." % (self.root), 1)
+                    msg = "Xapers directory '%s' " % self.root\
+                        + "does not contain database."
+                    raise DatabaseError(msg, 1)
                 else:
-                    raise DatabaseError("Xapers directory '%s' not found." % (self.root), 1)
+                    raise DatabaseError(
+                        "Xapers directory '%s' not found." % self.root, 1)
 
         # the Xapian db
         xapian_path = os.path.join(xapers_path, 'xapian')
         if writable:
-            self.xapian = xapian.WritableDatabase(xapian_path, xapian.DB_CREATE_OR_OPEN)
+            self.xapian = xapian.WritableDatabase(
+                xapian_path, xapian.DB_CREATE_OR_OPEN)
         else:
             self.xapian = xapian.Database(xapian_path)
 
@@ -142,7 +151,8 @@ class Database():
         #        db?  Would elliminate dependence on source modules at
         #        search time.
         for source in list_sources():
-            self.query_parser.add_boolean_prefix(source, self._make_source_prefix(source))
+            self.query_parser.add_boolean_prefix(
+                source, self._make_source_prefix(source))
 
     def __enter__(self):
         return self
