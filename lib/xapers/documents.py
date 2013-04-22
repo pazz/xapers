@@ -19,7 +19,6 @@ Jameson Rollins <jrollins@finestructure.net>
 """
 
 import os
-import sys
 import shutil
 import xapian
 
@@ -28,14 +27,17 @@ import xapers.source
 
 ##################################################
 
+
 class DocumentError(Exception):
     """Base class for Xapers document exceptions."""
     def __init__(self, msg):
         self.msg = msg
+
     def __str__(self):
         return self.msg
 
 ##################################################
+
 
 class Documents():
     """Represents a set of Xapers documents given a Xapian mset."""
@@ -66,6 +68,7 @@ class Documents():
 
 ##################################################
 
+
 class Document():
     """Represents a single Xapers document."""
 
@@ -86,7 +89,8 @@ class Document():
             # use specified docid if provided
             if docid:
                 if self.db[docid]:
-                    raise DocumentError('Document already exists for id %s.' % docid)
+                    raise DocumentError(
+                        'Document already exists for id %s.' % docid)
                 self.docid = docid
             else:
                 self.docid = str(self.db._generate_docid())
@@ -105,7 +109,9 @@ class Document():
     def _make_docdir(self):
         if os.path.exists(self.docdir):
             if not os.path.isdir(self.docdir):
-                raise DocumentError('File exists at intended docdir location: %s' % self.docdir)
+                msg = 'File exists at intended docdir location: '
+                msg += self.docdir
+                raise DocumentError(msg)
         else:
             os.makedirs(self.docdir)
 
@@ -180,7 +186,7 @@ class Document():
         if prefix:
             term_gen.index_text(text, 1, prefix)
         term_gen.index_text(text)
-            
+
     # return a list of terms for prefix
     # FIXME: is this the fastest way to do this?
     def _get_terms(self, prefix):
@@ -211,7 +217,7 @@ class Document():
 
         self._gen_terms(None, text)
 
-        summary = text[0:997].translate(None,'\n') + '...'
+        summary = text[0:997].translate(None, '\n') + '...'
 
         return summary
 
@@ -227,7 +233,8 @@ class Document():
         """Return fullpaths associated with document."""
         list = []
         for path in self._get_paths():
-            # FIXME: this is a hack for old bad path specifications and should be removed
+            # FIXME: this is a hack for old bad path specifications and should
+            # be removed
             if path.find(self.root) == 0:
                 index = len(self.root) + 1
                 path = path[index:]
@@ -264,9 +271,7 @@ File will not copied in to docdir until sync()."""
             self._infiles = {}
         self._infiles[infile] = outfile
 
-
     ########################################
-
     # SOURCES
     def _purge_sources_prefix(self, source):
         # purge all terms for a given source prefix
@@ -277,7 +282,7 @@ File will not copied in to docdir until sync()."""
 
     def add_sid(self, sid):
         """Add source sid to document."""
-        source,oid = sid.split(':',1)
+        source, oid = sid.split(':', 1)
         source = source.lower()
         # remove any existing terms for this source
         self._purge_sources_prefix(source)
