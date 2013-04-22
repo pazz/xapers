@@ -1,5 +1,4 @@
 import os
-import sys
 import io
 import json
 import pybtex
@@ -11,19 +10,22 @@ from pybtex.database.output import bibtex as outparser
 
 def clean_bib_string(string):
     for char in ['{', '}']:
-        string = string.replace(char,'')
+        string = string.replace(char, '')
     return string
 
 ##################################################
+
 
 class BibtexError(Exception):
     """Base class for Xapers bibtex exceptions."""
     def __init__(self, msg):
         self.msg = msg
+
     def __str__(self):
         return self.msg
 
 ##################################################
+
 
 class Bibtex():
     """Represents a bibtex database."""
@@ -38,13 +40,13 @@ class Bibtex():
             try:
                 bibdata = parser.parse_file(bibtex)
             except Exception, e:
-                raise BibtexError('Error loading bibtex from file: %s' % e )
+                raise BibtexError('Error loading bibtex from file: %s' % e)
         else:
             try:
                 with io.StringIO(unicode(bibtex)) as stream:
                     bibdata = parser.parse_stream(stream)
             except Exception, e:
-                raise BibtexError('Error loading bibtex string: %s' % e )
+                raise BibtexError('Error loading bibtex string: %s' % e)
 
         self.keys = bibdata.entries.keys()
         self.entries = bibdata.entries.values()
@@ -70,6 +72,7 @@ class Bibtex():
         return self[self.index]
 
 ##################################################
+
 
 class Bibentry():
     def __init__(self, key, entry):
@@ -114,6 +117,7 @@ class Bibentry():
         writer.write_file(self._entry2db(), path)
 
 ##################################################
+
 
 def data2bib(data, key, type='article'):
     """Convert a python dict into a Bibentry object."""
@@ -164,6 +168,7 @@ def json2bib(jsonstring, key, type='article'):
 
     if authors:
         for author in authors:
-            entry.add_person(Person(first=author['given'], last=author['family']), 'author')
+            entry.add_person(Person(first=author[
+                             'given'], last=author['family']), 'author')
 
     return Bibentry(key, entry)
