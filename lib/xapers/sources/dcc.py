@@ -3,6 +3,7 @@ import pycurl
 import cStringIO
 import tempfile
 import xapers.bibtex as bibparse
+import logging
 
 
 def dccRetrieveXML(docid):
@@ -25,10 +26,8 @@ def dccRetrieveXML(docid):
     curl.setopt(pycurl.WRITEFUNCTION, doc.write)
     try:
         curl.perform()
-    except:
-        import traceback
-        traceback.print_exc(file=sys.stderr)
-        sys.stderr.flush()
+    except Exception as e:
+        logging.exception(e)
 
     xml = doc.getvalue()
 
@@ -100,7 +99,7 @@ class Source():
         try:
             title, authors, year, abstract = dccXMLExtract(xml)
         except:
-            print >>sys.stderr, xml
+            logging.error(xml)
             raise
 
         data = {
