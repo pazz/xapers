@@ -12,6 +12,8 @@ import argparse
 
 # combine a list of terms with spaces between, so that simple queries
 # don't have to be quoted at the shell level.
+
+
 def make_query_string(terms, require=True):
     string = str.join(' ', terms)
     if string == '':
@@ -22,23 +24,24 @@ def make_query_string(terms, require=True):
             string = '*'
     return string
 
+
 def import_nci():
     try:
         import xapers.nci
     except ImportError:
-        logging.error("The python-urwid package does not appear to be installed.")
+        logging.error( "The python-urwid package is not installed.")
         logging.error("Please install to be able to use the curses UI.")
         sys.exit(1)
 
 ########################################################################
 
-epilog="""
+epilog = """
 The xapers document store is specified by the XAPERS_ROOT environment
 variable, or defaults to '~/.xapers/docs' if not specified (the
 directory is allowed to be a symlink).
 """
 
-def_search_terms="""
+def_search_terms = """
 Free-form text to match against indexed document
 text, or the following prefixes can be used to match against
 specific document metadata:
@@ -53,7 +56,7 @@ specific document metadata:
 The string '*' will match all documents.
 """
 
-def_source="""
+def_source = """
 This is a URL, a source ID string of the form
 '<source>:<id>', or a bibtex file
 """
@@ -70,51 +73,59 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose', action='count', default=0,
                         help='increase verbosity. This is repeatable')
     xroot = os.getenv('XAPERS_ROOT',
-                    os.path.join('~','.xapers','docs'))
+                      os.path.join('~', '.xapers', 'docs'))
     parser.add_argument('--xroot', help='path to xapers root', default=xroot)
 
     # add subcommands
     subparsers = parser.add_subparsers(dest="cmd", help='sub-command help')
 
     # add
-    hmsg = 'Add a new document or update existing. If provided, search should match a single document'
+    hmsg = 'Add a new document or update existing. '\
+        'If provided, search should match a single document'
     # from py3.2, you can use parameter aliases=['a'] in the next line to
     # add subcommand aliases. If you feel this is a requirement one can locally
     # ship a backport.
     parser_add = subparsers.add_parser('add', help=hmsg)
 
     parser_add.add_argument('search')
-    parser_add.add_argument('--source', help='source for retrieving bibtex. ' + def_source)
-    parser_add.add_argument('--file', dest='infile', help='file to index and archive')
+    parser_add.add_argument(
+        '--source', help='source for retrieving bibtex. ' + def_source)
+    parser_add.add_argument(
+        '--file', dest='infile', help='file to index and archive')
     parser_add.add_argument('--tag', metavar='tag', nargs='*',
                             help='initial tags',
                             default=['new'])
     parser_add.add_argument('--prompt', action='store_true',
-                               help='prompt for unspecified options')
+                            help='prompt for unspecified options')
     parser_add.add_argument('--view', action='store_true',
-                               help='view entry after adding')
+                            help='view entry after adding')
     # delete
-    parser_delete = subparsers.add_parser('delete', help='Delete documents from database')
+    parser_delete = subparsers.add_parser(
+        'delete', help='Delete documents from database')
     parser_delete.add_argument('search')
     parser_delete.add_argument('--noprompt', action='store_true',
                                help='do not prompt to confirm deletion')
     # restore
-    parser_restore = subparsers.add_parser('restore', help='Restore database from xapers root')
+    parser_restore = subparsers.add_parser(
+        'restore', help='Restore database from xapers root')
     # update-all
-    parser_update = subparsers.add_parser('update', help='Update all documents')
+    parser_update = subparsers.add_parser(
+        'update', help='Update all documents')
     # tag
     # TODO: add validator that ensures all tags are prefixed correctly
     parser_tag = subparsers.add_parser('tag', help='Add/remove tags')
     parser_tag.add_argument('tags', metavar='tag', nargs='+')
     parser_tag.add_argument('search')
     # search
-    parser_search = subparsers.add_parser('search', help='Search for documents')
+    parser_search = subparsers.add_parser(
+        'search', help='Search for documents')
     parser_search.add_argument('search')
     parser_search.add_argument('--limit', type=int,
                                help='limit number of results returned',
                                default=20)
     parser_search.add_argument('--output',
-                               choices=['summary','bibtex','tags','sources','keys','files'],
+                               choices=['summary', 'bibtex', 'tags',
+                                        'sources', 'keys', 'files'],
                                help='output format',
                                default='summary')
     # bibtex
@@ -122,7 +133,8 @@ if __name__ == '__main__':
     parser_bibtex = subparsers.add_parser('bibtex', help=hmsg)
     parser_bibtex.add_argument('search')
     # show
-    parser_show = subparsers.add_parser('show', help='View search in curses UI')
+    parser_show = subparsers.add_parser(
+        'show', help='View search in curses UI')
     parser_show.add_argument('search')
     # count
     parser_count = subparsers.add_parser('count', help='Count matches')
@@ -133,13 +145,15 @@ if __name__ == '__main__':
     parser_export.add_argument('dir')  # TODO: check if valid dir HERE!
     parser_export.add_argument('search')
     # sources
-    parser_sources = subparsers.add_parser('sources', help='List available sources')
+    parser_sources = subparsers.add_parser(
+        'sources', help='List available sources')
     # source2bib
     hmsg = 'retrieve bibtex for source and 70 print to stdout'
     parser_source2bib = subparsers.add_parser('source2bib', help=hmsg)
     parser_source2bib.add_argument('source', help='source. ' + def_source)
     # scandoc
-    parser_scandoc = subparsers.add_parser('scandoc', help='Scan a file for source IDs')
+    parser_scandoc = subparsers.add_parser(
+        'scandoc', help='Scan a file for source IDs')
     parser_scandoc.add_argument('file')  # TODO: check if its a valid file
 
     # parse arguments and handle errors
@@ -156,7 +170,7 @@ if __name__ == '__main__':
         2: logging.DEBUG,
     }[min(2, args.verbose)]
     # set up logging
-    logging.basicConfig(level = loglevel,
+    logging.basicConfig(level=loglevel,
                         format='%(levelname)s: %(message)s')
 
     logging.debug('command line parameter: %s' % args)
@@ -171,8 +185,9 @@ if __name__ == '__main__':
         query_string = args.search
 
         try:
-            docid = cli.add(query_string, infile=args.infile, source=args.source,
-                            tags=args.tags, prompt=args.prompt)
+            docid = cli.add(
+                query_string, infile=args.infile, source=args.source,
+                tags=args.tags, prompt=args.prompt)
         except KeyboardInterrupt:
             sys.exit(1)
 
@@ -182,7 +197,7 @@ if __name__ == '__main__':
 
         if args.view and docid:
             import_nci()
-            xapers.nci.UI(xroot, cmd=['search', 'id:'+docid])
+            xapers.nci.UI(xroot, cmd=['search', 'id:' + docid])
 
     ########################################
     elif cmd == 'update-all':
@@ -209,10 +224,9 @@ if __name__ == '__main__':
 
         query_string = args.search
         try:
-            cli.search(query, oformat=args.output, limit=args.limit)
+            cli.search(query_string, oformat=args.output, limit=args.limit)
         except KeyboardInterrupt:
             sys.exit(1)
-
 
     ########################################
     elif cmd == 'show':
@@ -274,7 +288,7 @@ if __name__ == '__main__':
     ########################################
     elif cmd == 'count':
         cli = xapers.cli.UI(xroot)
-        #query = make_query_string(sys.argv[2:], require=False)
+        # query = make_query_string(sys.argv[2:], require=False)
         query_string = args.search
         # TODO: this should really go into the lib, not some cli code!
         cli.count(query_string)
@@ -282,7 +296,7 @@ if __name__ == '__main__':
     ########################################
     elif cmd == 'export':
         cli = xapers.cli.UI(xroot)
-        #query = make_query_string(sys.argv[3:])
+        # query = make_query_string(sys.argv[3:])
         query_string = args.search
         # TODO: this should really go into the lib, not some cli code!
         cli.export(args.dir, query_string)
