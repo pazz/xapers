@@ -5,6 +5,7 @@ import sys
 import xapers
 import xapers.cli
 import xapers.source
+import logging
 
 ########################################################################
 
@@ -14,7 +15,7 @@ def make_query_string(terms, require=True):
     string = str.join(' ', terms)
     if string == '':
         if require:
-            print >>sys.stderr, "Must specify a search term."
+            logging.error("Must specify a search term.")
             sys.exit(1)
         else:
             string = '*'
@@ -24,8 +25,8 @@ def import_nci():
     try:
         import xapers.nci
     except ImportError:
-        print >>sys.stderr, "The python-urwid package does not appear to be installed."
-        print >>sys.stderr, "Please install to be able to use the curses UI."
+        logging.error("The python-urwid package does not appear to be installed.")
+        logging.error("Please install to be able to use the curses UI.")
         sys.exit(1)
 
 ########################################################################
@@ -110,6 +111,10 @@ if __name__ == '__main__':
     xroot = os.getenv('XAPERS_ROOT',
                       os.path.expanduser(os.path.join('~','.xapers','docs')))
 
+    # set up logging
+    logging.basicConfig(level = logging.WARNING,
+                        format='%(levelname)s: %(message)s')
+
     ########################################
     if cmd in ['add','a']:
         cli = xapers.cli.UI(xroot)
@@ -145,7 +150,6 @@ if __name__ == '__main__':
         try:
             docid = cli.add(query_string, infile=infile, source=source, tags=tags, prompt=prompt)
         except KeyboardInterrupt:
-            print >>sys.stderr, ''
             sys.exit(1)
 
         # dereference the cli object so that the database is flushed
@@ -198,14 +202,13 @@ if __name__ == '__main__':
             argc += 1
 
         if oformat not in ['summary','bibtex','tags','sources','keys','files']:
-                print >>sys.stderr, "Unknown output format."
+                logging.error("Unknown output format.")
                 sys.exit(1)
 
         query = make_query_string(sys.argv[argc:])
         try:
             cli.search(query, oformat=oformat, limit=limit)
         except KeyboardInterrupt:
-            print >>sys.stderr, ''
             sys.exit(1)
 
     ########################################
@@ -216,7 +219,6 @@ if __name__ == '__main__':
         try:
             cli.search(query, oformat='bibtex')
         except KeyboardInterrupt:
-            print >>sys.stderr, ''
             sys.exit(1)
 
     ########################################
@@ -232,7 +234,6 @@ if __name__ == '__main__':
         try:
             xapers.nci.UI(xroot, cmd=args)
         except KeyboardInterrupt:
-            print >>sys.stderr, ''
             sys.exit(1)
 
     ########################################
@@ -258,11 +259,11 @@ if __name__ == '__main__':
             argc += 1
 
         if not add_tags and not remove_tags:
-            print >>sys.stderr, "Must specify tags to add or remove."
+            logging.error("Must specify tags to add or remove.")
             sys.exit(1)
 
         if '' in add_tags:
-            print >>sys.stderr, "Null tags not allowed."
+            logging.error("Null tags not allowed.")
             sys.exit(1)
 
         query = make_query_string(sys.argv[argc:])
@@ -312,23 +313,24 @@ if __name__ == '__main__':
         try:
             smod = xapers.source.get_source(string)
         except xapers.source.SourceError as e:
-            print >>sys.stderr, e
+            logging.exception(e)
             sys.exit(1)
 
         try:
-            print >>sys.stderr, "Retrieving bibtex...",
+            logging.info("Retrieving bibtex...")
             bibtex = smod.get_bibtex()
-            print >>sys.stderr, "done."
+            logging.info("done.")
         except Exception, e:
-            print >>sys.stderr, "\n"
-            print >>sys.stderr, "Could not retrieve bibtex: %s" % e
+            logging.error("Could not retrieve bibtex:")
+            logging.exception(e)
             sys.exit(1)
 
         try:
             print xapers.bibtex.Bibtex(bibtex)[0].as_string()
         except Exception, e:
-            print >>sys.stderr, "Error parsing bibtex: %s" % e
-            print >>sys.stderr, "Outputting raw..."
+            logging.error("Error parsing bibtex: %s")
+            logging.exception(e)
+            logging.error("Outputting raw...")
             print bibtex
             sys.exit(1)
 
@@ -350,6 +352,6 @@ if __name__ == '__main__':
 
     ########################################
     else:
-        print >>sys.stderr, "Unknown command '%s'." % cmd
-        print >>sys.stderr, "See \"help\" for more information."
+        msg = "Unknown command '%s'. See \"help\" for more information." % cmd
+        logging.error(msg)
         sys.exit(1)
