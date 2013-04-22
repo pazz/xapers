@@ -64,7 +64,14 @@ if __name__ == '__main__':
 
     # create the top-level parser
     parser = argparse.ArgumentParser(epilog=epilog)
+
+    # global options
     parser.add_argument('--version', action='version', version='Ha!')
+    xroot = os.getenv('XAPERS_ROOT',
+                    os.path.join('~','.xapers','docs'))
+    parser.add_argument('--xroot', help='path to xapers root', default=xroot)
+
+    # add subcommands
     subparsers = parser.add_subparsers(dest="cmd", help='sub-command help')
 
     # add
@@ -136,8 +143,7 @@ if __name__ == '__main__':
     else:
         cmd = []
 
-    xroot = os.getenv('XAPERS_ROOT',
-                      os.path.expanduser(os.path.join('~','.xapers','docs')))
+    xroot = os.path.expanduser(args.xroot)
 
     # set up logging
     logging.basicConfig(level = logging.WARNING,
