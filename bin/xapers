@@ -6,6 +6,7 @@ import xapers
 import xapers.cli
 import xapers.source
 import logging
+import argparse
 
 ########################################################################
 
@@ -31,77 +32,104 @@ def import_nci():
 
 ########################################################################
 
-def usage():
-    prog = os.path.basename(sys.argv[0])
-    print "Usage:", prog, "<command> [args...]"
-    print """
-Commands:
-
-  add [options] [<search-terms>]      Add a new document or update existing.
-                                      If provided, search should match a single
-                                      document.
-    --source=<source>                   source, for retrieving bibtex
-    --file=<file>                       file to index and archive
-    --tags=<tag>[,...]                  initial tags
-    --prompt                            prompt for unspecified options
-    --view                              view entry after adding
-  delete <search-terms>               Delete documents from database.
-    --noprompt                          do not prompt to confirm deletion
-  restore                             Restore database from xapers root.
-
-  tag +<tag>|-<tag> [...] [--] <search-terms>
-                                      Add/remove tags.
-
-  search [options] <search-terms>     Search for documents.
-    --output=[summary|bibtex|tags|sources|keys|files]
-                                        output format (default is 'summary')
-    --limit=N                           limit number of results returned
-                                        (default is 20, 0 for all)
-  bibtex <search-terms>               Short for \"search --output=bibtex\".
-  view <search-terms>                 View search in curses UI.
-  count <search-terms>                Count matches.
-
-  export <dir> <search-terms>         Export documents to a directory of
-                                      files named for document titles.
-
-  sources                             List available sources.
-  source2bib <source>                 Retrieve bibtex for source and
-                                      print to stdout.
-  scandoc <file>                      Scan a file for source IDs.
-
-  version                             Print version number.
-  help                                This help.
-
+epilog="""
 The xapers document store is specified by the XAPERS_ROOT environment
 variable, or defaults to '~/.xapers/docs' if not specified (the
 directory is allowed to be a symlink).
+"""
 
-Other definitions:
+def_search_terms="""
+Free-form text to match against indexed document
+text, or the following prefixes can be used to match against
+specific document metadata:
+    id:<docid>               Xapers document id
+    author:<string>          string in authors (also a:)
+    title:<string>           string in title (also t:)
+    tag:<tag>                specific user tags
+    <source>:<id>            specific sid string
+    source:<lib>             specific source
+    key:<key>                specific bibtex citation key
 
-  <docid>: Documents are assigned unique integer IDs.
+The string '*' will match all documents.
+"""
 
-  <source>: A source can be either a URL, a source ID string of the
-    form '<source>:<id>', or a bibtex file.  Currently recognized
-    sources:
-      doi:<Digital Object Id>
-      arxiv:<arXiv Article Id>
-
-  <search-terms>: Free-form text to match against indexed document
-    text, or the following prefixes can be used to match against
-    specific document metadata:
-      id:<docid>               Xapers document id
-      author:<string>          string in authors (also a:)
-      title:<string>           string in title (also t:)
-      tag:<tag>                specific user tags
-      <source>:<id>            specific sid string
-      source:<lib>             specific source
-      key:<key>                specific bibtex citation key
-
-  The string '*' will match all documents."""
+def_source="""
+This is a URL, a source ID string of the form
+'<source>:<id>', or a bibtex file
+"""
 
 ########################################################################
 
 if __name__ == '__main__':
+
+    # create the top-level parser
+    parser = argparse.ArgumentParser(epilog=epilog)
+    parser.add_argument('--version', action='version', version='Ha!')
+    subparsers = parser.add_subparsers(dest="cmd", help='sub-command help')
+
+    # add
+    hmsg = 'Add a new document or update existing. If provided, search should match a single document'
+    parser_add = subparsers.add_parser('add', help=hmsg)
+    parser_add.add_argument('search')
+    parser_add.add_argument('--source', help='source for retrieving bibtex. ' + def_source)
+    parser_add.add_argument('--file', help='file to index and archive')
+    parser_add.add_argument('--tag', metavar='tag', nargs='*',
+                            help='initial tags',
+                            default=['new'])
+    parser_add.add_argument('--prompt', action='store_true',
+                               help='prompt for unspecified options')
+    parser_add.add_argument('--view', action='store_true',
+                               help='view entry after adding')
+    # delete
+    parser_delete = subparsers.add_parser('delete', help='Delete documents from database')
+    parser_delete.add_argument('search')
+    parser_delete.add_argument('--noprompt', action='store_true',
+                               help='do not prompt to confirm deletion')
+    # restore
+    parser_restore = subparsers.add_parser('restore', help='Restore database from xapers root')
+    # tag
+    # TODO: add validator that ensures all tags are prefixed correctly
+    parser_tag = subparsers.add_parser('tag', help='Add/remove tags')
+    parser_tag.add_argument('tags', metavar='tag', nargs='+')
+    parser_tag.add_argument('search')
+    # search
+    parser_search = subparsers.add_parser('search', help='Search for documents')
+    parser_search.add_argument('search')
+    parser_search.add_argument('--limit', type=int,
+                               help='limit number of results returned',
+                               default=20)
+    parser_search.add_argument('--output',
+                               choices=['summary','bibtex','tags','sources','keys','files'],
+                               help='output format',
+                               default='summary')
+    # bibtex
+    hmsg = 'Short for \"search --output=bibtex\"'
+    parser_bibtex = subparsers.add_parser('bibtex', help=hmsg)
+    parser_bibtex.add_argument('search')
+    # show
+    parser_show = subparsers.add_parser('show', help='View search in curses UI')
+    parser_show.add_argument('search')
+    # count
+    parser_count = subparsers.add_parser('count', help='Count matches')
+    parser_count.add_argument('search')
+    # export
+    hmsg = 'Export documents to a directory of files named for document titles'
+    parser_export = subparsers.add_parser('export', help=hmsg)
+    parser_export.add_argument('dir')
+    parser_export.add_argument('search')
+    # sources
+    parser_sources = subparsers.add_parser('sources', help='List available sources')
+    # source2bib
+    hmsg = 'retrieve bibtex for source and 70 print to stdout'
+    parser_source2bib = subparsers.add_parser('source2bib', help=hmsg)
+    parser_source2bib.add_argument('source', help='source. ' + def_source)
+    # scandoc
+    parser_scandoc = subparsers.add_parser('scandoc', help='Scan a file for source IDs')
+    parser_scandoc.add_argument('file')
+
+    args = parser.parse_args()
+    print args
+
 
     if len(sys.argv) > 1:
         cmd = sys.argv[1]
