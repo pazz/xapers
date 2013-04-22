@@ -26,11 +26,13 @@ sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 import sets
 import shutil
 import readline
+import logging
 
 from xapers.database import Database, DatabaseError
 from xapers.documents import Document
 from xapers.bibtex import Bibtex, BibtexError
 import xapers.source
+
 
 ############################################################
 
@@ -38,8 +40,8 @@ def initdb(xroot, writable=False, create=False, force=False):
     try:
         return Database(xroot, writable=writable, create=create, force=force)
     except DatabaseError as e:
-        print >>sys.stderr, e.msg
-        print >>sys.stderr, 'Import a document to initialize.'
+        logging.error(e.msg)
+        logging.error('Import a document to initialize.')
         sys.exit(e.code)
 
 ############################################################
@@ -116,7 +118,7 @@ class UI():
         # if query provided, find single doc to update
         if query_string:
             if self.db.count(query_string) != 1:
-                print >>sys.stderr, "Search did not match a single document.  Aborting."
+                logging.error("Search did not match a single document.  Aborting.")
                 sys.exit(1)
 
             for doc in self.db.search(query_string):
@@ -131,7 +133,7 @@ class UI():
         if infile:
             infile = os.path.expanduser(infile)
             if not os.path.exists(infile):
-                print >>sys.stderr, "Specified file '%s' not found." % infile
+                logging.error("Specified file '%s' not found." % infile)
                 sys.exit(1)
 
         if prompt:
@@ -140,18 +142,18 @@ class UI():
                 sources = [source]
             # scan the file for source info
             if infile:
-                print >>sys.stderr, "Scanning document for source identifiers..."
+                logging.info("Scanning document for source identifiers...")
                 ss = xapers.source.scan_for_sources(infile)
-                print >>sys.stderr, "%d source ids found:" % (len(sources))
+                logging.info("%d source ids found:" % (len(sources)))
                 if len(sources) > 0:
                     for sid in ss:
-                        print >>sys.stderr, "  %s" % (sid)
+                        logging.info("  %s" % sid)
                     sources += ss
             source = self.prompt_for_source(sources)
             tags = self.prompt_for_tags(tags)
 
         if not query_string and not infile and not source:
-            print >>sys.stderr, "Must specify file or source to import, or query to update existing document."
+            logging.error("Must specify file or source to import, or query to update existing document.")
             sys.exit(1)
 
         ##################################
@@ -165,33 +167,33 @@ class UI():
             try:
                 smod = xapers.source.get_source(source)
             except xapers.source.SourceError as e:
-                print >>sys.stderr, e
+                logging.exception(e)
                 sys.exit(1)
 
             sid = smod.get_sid()
             if not sid:
-                print >>sys.stderr, "Source ID not specified."
+                logging.error("Source ID not specified.")
                 sys.exit(1)
 
             # check that the source doesn't match an existing doc
             for tdoc in self.db.search(sid):
                 if doc:
                     if tdoc != doc:
-                        print >>sys.stderr, "Document already exists for source '%s'.  Aborting." % (sid)
+                        logging.error("Document already exists for source '%s'. Aborting." % sid)
                         sys.exit(1)
                 else:
-                    print >>sys.stderr, "Updating existing document..."
+                    logging.info("Updating existing document...")
                     doc = tdoc
                 break
 
         if smod:
             try:
-                print >>sys.stderr, "Retrieving bibtex...",
+                logging.info("Retrieving bibtex...")
                 bibtex = smod.get_bibtex()
-                print >>sys.stderr, "done."
+                logging.info("done.")
             except Exception, e:
-                print >>sys.stderr, "\n"
-                print >>sys.stderr, "Could not retrieve bibtex: %s" % e
+                logging.error("Could not retrieve bibtex: %s")
+                logging.exception(e)
                 sys.exit(1)
 
         ##################################
@@ -205,47 +207,44 @@ class UI():
 
         if bibtex:
             try:
-                print >>sys.stderr, "Adding bibtex...",
+                logging.info("Adding bibtex...")
                 doc.add_bibtex(bibtex)
-                print >>sys.stderr, "done."
+                logging.info("done.")
             except BibtexError, e:
-                print >>sys.stderr, "\n"
-                print >>sys.stderr, e
-                print >>sys.stderr, "Bibtex must be a plain text file with a single bibtex entry."
+                logging.exception(e)
+                logging.error("Bibtex must be a plain text file with a single bibtex entry.")
                 sys.exit(1)
             except:
-                print >>sys.stderr, "\n"
                 raise
 
         if infile:
             path = os.path.abspath(infile)
             try:
-                print >>sys.stderr, "Adding file '%s'..." % (path),
+                logging.info("Adding file '%s'..." % path)
                 # FIXME: check if file already exists?
+                # can be done with os.path.isfile
                 doc.add_file(path)
-                print >>sys.stderr, "done."
+                logging.info("done.")
             except:
-                print >>sys.stderr, "\n"
                 raise
 
         if tags:
             try:
-                print >>sys.stderr, "Adding tags...",
+                logging.info("Adding tags...")
                 doc.add_tags(tags)
-                print >>sys.stderr, "done."
+                logging.info("done.")
             except:
-                print >>sys.stderr, "\n"
+                # TODO: if you only raise it anyway just drop the try/except?
                 raise
 
         ##################################
         # sync the doc to db and disk
 
         try:
-            print >>sys.stderr, "Syncing document...",
+            logging.info("Syncing document...")
             doc.sync()
-            print >>sys.stderr, "done.\n",
+            logging.info("done.")
         except:
-            print >>sys.stderr, "\n"
             raise
 
         print "id:%s" % doc.docid
@@ -257,12 +256,12 @@ class UI():
         self.db = initdb(self.xroot, writable=True)
         count = self.db.count(query_string)
         if count == 0:
-            print >>sys.stderr, "No documents found for query."
+            logging.error("No documents found for query.")
             sys.exit(1)
         if prompt:
             resp = raw_input("Type 'yes' to delete %d documents: " % count)
             if resp != 'yes':
-                print >>sys.stderr, "Aborting."
+                logging.error("Aborting.")
                 sys.exit(1)
         for doc in self.db.search(query_string):
             doc.purge()
@@ -273,12 +272,11 @@ class UI():
         self.db = initdb(self.xroot, writable=True)
         for doc in self.db.search('*', limit=0):
             try:
-                print >>sys.stderr, "Updating %s..." % doc.docid,
+                logging.info("Updating %s..." % doc.docid)
                 doc.update_from_bibtex()
                 doc.sync()
-                print >>sys.stderr, "done."
+                logging.info("done.")
             except:
-                print >>sys.stderr, "\n"
                 raise
 
     ############################################
@@ -346,7 +344,7 @@ class UI():
             if oformat == 'bibtex':
                 bibtex = doc.get_bibtex()
                 if not bibtex:
-                    print >>sys.stderr, "No bibtex for doc id:%s." % docid
+                    logging.error("No bibtex for doc id:%s." % docid)
                 else:
                     print bibtex
                     print
