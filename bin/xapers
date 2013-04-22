@@ -67,6 +67,8 @@ if __name__ == '__main__':
 
     # global options
     parser.add_argument('--version', action='version', version='Ha!')
+    parser.add_argument('-v', '--verbose', action='count', default=0,
+                        help='increase verbosity. This is repeatable')
     xroot = os.getenv('XAPERS_ROOT',
                     os.path.join('~','.xapers','docs'))
     parser.add_argument('--xroot', help='path to xapers root', default=xroot)
@@ -135,19 +137,22 @@ if __name__ == '__main__':
     parser_scandoc.add_argument('file')
 
     args = parser.parse_args()
-    print args
 
-
-    if len(sys.argv) > 1:
-        cmd = sys.argv[1]
-    else:
-        cmd = []
 
     xroot = os.path.expanduser(args.xroot)
+    cmd = args.cmd
 
+    # set up the verbosity level of the logging system
+    loglevel = {
+        0: logging.WARNING,
+        1: logging.INFO,
+        2: logging.DEBUG,
+    }[min(2, args.verbose)]
     # set up logging
-    logging.basicConfig(level = logging.WARNING,
+    logging.basicConfig(level = loglevel,
                         format='%(levelname)s: %(message)s')
+
+    logging.debug('command line parameter: %s' % args)
 
     ########################################
     if cmd in ['add','a']:
