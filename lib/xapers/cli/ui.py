@@ -57,7 +57,7 @@ class UI():
 
     def prompt_for_file(self, infile):
         if infile:
-            print >>sys.stderr, 'file: %s' % infile
+            print 'file: %s' % infile
         else:
             readline.set_startup_hook()
             readline.parse_and_bind('')
@@ -83,7 +83,7 @@ class UI():
     def prompt_for_tags(self, tags):
         # always prompt for tags, and append to initial
         if tags:
-            print >>sys.stderr, 'initial tags: %s' % ' '.join(tags)
+            print 'initial tags: %s' % ' '.join(tags)
         else:
             tags = []
         if self.db:
