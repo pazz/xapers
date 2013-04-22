@@ -24,6 +24,7 @@ import xapian
 
 from source import list_sources
 from documents import Documents, Document
+import logging
 
 # FIXME: add db schema documentation
 
@@ -301,7 +302,7 @@ class Database():
                 continue
 
             if log:
-                print >>sys.stderr, docdir
+                logging.debug(docdir)
 
             docfiles = os.listdir(docdir)
             if not docfiles:
@@ -316,7 +317,7 @@ class Database():
                 continue
 
             if log:
-                print >>sys.stderr, '  docid:', docid
+                logging.debug('  docid: %s' % docid)
 
             doc = self.__getitem__(docid)
             if not doc:
@@ -326,15 +327,15 @@ class Database():
                 dpath = os.path.join(docdir, dfile)
                 if dfile == 'bibtex':
                     if log:
-                        print >>sys.stderr, '  adding bibtex'
+                        logging.debug('  adding bibtex')
                     doc.add_bibtex(dpath)
                 elif os.path.splitext(dpath)[1] == '.pdf':
                     if log:
-                        print >>sys.stderr, '  adding file:', dfile
+                        logging.debug('  adding file: %s' % dfile)
                     doc.add_file(dpath)
                 elif dfile == 'tags':
                     if log:
-                        print >>sys.stderr, '  adding tags'
+                        logging.debug('  adding tags')
                     with open(dpath, 'r') as f:
                         tags = f.read().strip().split('\n')
                     doc.add_tags(tags)
