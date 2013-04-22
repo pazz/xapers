@@ -4,8 +4,12 @@ import cStringIO
 import tempfile
 import xapers.bibtex as bibparse
 
+
 def dccRetrieveXML(docid):
-    url = 'https://dcc.ligo.org/Shibboleth.sso/Login?target=https%3A%2F%2Fdcc.ligo.org%2Fcgi-bin%2Fprivate%2FDocDB%2FShowDocument?docid=' + docid + '%26outformat=xml&entityID=https%3A%2F%2Flogin.ligo.org%2Fidp%2Fshibboleth'
+    # TODO: make this configurable (and conform <=79char limit on lines )
+    url = 'https://dcc.ligo.org/Shibboleth.sso/Login?target=https%3A%2F%2Fdcc.ligo.org%2Fcgi-bin%2Fprivate%2FDocDB%2FShowDocument?docid=' + \
+        docid + \
+        '%26outformat=xml&entityID=https%3A%2F%2Flogin.ligo.org%2Fidp%2Fshibboleth'
 
     curl = pycurl.Curl()
     cookies = tempfile.NamedTemporaryFile()
@@ -34,8 +38,9 @@ def dccRetrieveXML(docid):
 
     return xml
 
+
 def dccXMLExtract(xmlstring):
-    from xml.dom.minidom import parse, parseString
+    from xml.dom.minidom import parseString
     xml = parseString(xmlstring)
     etitle = xml.getElementsByTagName("title")[0].firstChild
     if etitle:
@@ -45,7 +50,8 @@ def dccXMLExtract(xmlstring):
     alist = xml.getElementsByTagName("author")
     authors = []
     for author in alist:
-        authors.append(author.getElementsByTagName("fullname")[0].firstChild.data)
+        authors.append(author.getElementsByTagName(
+            "fullname")[0].firstChild.data)
     eabstract = xml.getElementsByTagName("abstract")[0].firstChild
     if eabstract:
         abstract = eabstract.data
@@ -75,7 +81,7 @@ class Source():
         if netloc != self.netloc:
             return False
         fullid = path.split('/')[1]
-        dccid, vers = fullid.replace('LIGO-','').split('-')
+        dccid, vers = fullid.replace('LIGO-', '').split('-')
         self.id = dccid
         if self.id:
             return True
@@ -85,7 +91,7 @@ class Source():
     def get_data(self):
         if 'file' in dir(self):
             f = open(self.file, 'r')
-            url = None
+            url = None  # never used!
             xml = f.read()
             f.close()
         else:
@@ -102,7 +108,7 @@ class Source():
             'number': self.id,
             'dcc': self.id,
             'url': self.gen_url()
-            }
+        }
 
         if title:
             data['title'] = title
@@ -117,7 +123,7 @@ class Source():
 
     def get_bibtex(self):
         data = self.get_data()
-        key = self.get_sid()
+        key = self.get_sid() # never used!
         btype = '@techreport'
         bibentry = bibparse.data2bib(data, self.get_sid(), type=btype)
         return bibentry.as_string()

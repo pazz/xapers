@@ -3,6 +3,8 @@ from HTMLParser import HTMLParser
 import xapers.bibtex as bibparse
 
 # html parser override to override handler methods
+
+
 class MyHTMLParser(HTMLParser):
     def __init__(self):
         HTMLParser.__init__(self)
@@ -25,7 +27,7 @@ class MyHTMLParser(HTMLParser):
             return
 
         for attr in attrs:
-            #print "     attr:", attr
+            # print "     attr:", attr
             if attr[0] == 'name':
                 if attr[1] == 'citation_title':
                     title = True
@@ -41,7 +43,7 @@ class MyHTMLParser(HTMLParser):
                     self.title = attr[1]
                 if author:
                     self.author.append(attr[1])
-                    #self.author = self.author.append(attr[1])
+                    # self.author = self.author.append(attr[1])
                 if date:
                     self.year = attr[1].split('/')[0]
                 if sid:
@@ -50,6 +52,7 @@ class MyHTMLParser(HTMLParser):
     def handle_endtag(self, tag):
         if tag == 'head':
             self.lefthead = True
+
 
 class Source():
     source = 'arxiv'
@@ -102,7 +105,7 @@ class Source():
             'year':    parser.year,
             'eprint':  self.id,
             'url':     self.gen_url(),
-            }
+        }
 
         return data
 

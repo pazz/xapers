@@ -1,14 +1,15 @@
 import io
-import sys
 import urllib2
 import xapers.bibtex as bibparse
+
 
 class Source():
     source = 'doi'
     netloc = 'dx.doi.org'
-    #scan_regex = '[doi|DOI][\s\.\:]{0,2}(10\.\d{4}[\d\:\.\-\/a-z]+)[A-Z\s]'
-    #scan_regex = '\b(10[.][0-9]{4,}(?:[.][0-9]+)*/(?:(?!["&\'<>])[[:graph:]])+)\b'
-    #scan_regex = '(doi|DOI)(10[.][0-9]{4,}(?:[.][0-9]+)*[\/\.](?:(?!["&\'<>])[[:graph:]])+)'
+    # scan_regex = '[doi|DOI][\s\.\:]{0,2}(10\.\d{4}[\d\:\.\-\/a-z]+)[A-Z\s]'
+    # scan_regex = '\b(10[.][0-9]{4,}(?:[.][0-9]+)*/(?:(?!["&\'<>])[[:graph:]])+)\b'
+    # scan_regex =
+    # '(doi|DOI)(10[.][0-9]{4,}(?:[.][0-9]+)*[\/\.](?:(?!["&\'<>])[[:graph:]])+)'
     scan_regex = '(?:doi|DOI)[\s\.\:]{0,2}(10\.\d{4,}[\w\d\:\.\-\/]+)'
 
     def __init__(self, id=None):
@@ -68,7 +69,8 @@ class Source():
         return bibentry.as_string()
 
     def _get_bib_ads(self):
-        req = 'http://adsabs.harvard.edu/cgi-bin/nph-bib_query?bibcode=' + self.sid + '&data_type=BIBTEXPLUS'
+        req = 'http://adsabs.harvard.edu/cgi-bin/nph-bib_query?bibcode=' + \
+            self.sid + '&data_type=BIBTEXPLUS'
         f = urllib2.urlopen(req)
         bibtex = f.read()
         f.close
