@@ -23,6 +23,7 @@ setup(
     requires = [
         'xapian',
         'pybtex',
-        'urwid'
+        'urwid',
+        'pdfminer'  # not sure which version
         ],
     )
