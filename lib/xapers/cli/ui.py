@@ -288,10 +288,9 @@ class UI():
 
                 doc.add_bibentry(entry)
 
-                filepath = entry.get_file()
-                if filepath:
-                    print >>sys.stderr, "  Adding file: %s" % filepath
-                    doc.add_file(filepath)
+                for (basename, relpath, doctype) in entry.get_files():
+                    print >>sys.stderr, "  Adding file: %s" % relpath
+                    doc.add_file(relpath)
 
                 doc.add_tags(tags)
 
