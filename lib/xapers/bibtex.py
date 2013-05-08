@@ -2,6 +2,7 @@ import os
 import sys
 import io
 import json
+import re
 import pybtex
 from pybtex.core import Entry, Person
 from pybtex.bibtex.utils import split_name_list
@@ -97,6 +98,22 @@ class Bibentry():
     def set_file(self, path):
         # FIXME: what's the REAL proper format for this
         self.entry.fields['file'] = ':%s:%s' % (path, 'pdf')
+
+    def get_files(self):
+        """
+        interprets the 'file' field as written by jabref and friends
+        :return: list of triples of basename, relative path and document type
+                 (PDF, PostScript, Djvu)
+        """
+        triples = []
+        filere = r'(?P<basename>.*):(?P<path>.*):(?P<type>.*)'
+        if 'file' in self.entry.fields:
+            value = self.entry.fields['file']
+            for entry in value.split(';'):
+                match = re.match(filere, entry)
+                if match:
+                    triples.append(match.groups())
+        return triples
 
     def get_file(self):
         """Returns file path if file field exists.
