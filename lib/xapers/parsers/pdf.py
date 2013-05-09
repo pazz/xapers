@@ -1,14 +1,13 @@
-from xapers.parser import ParserBase
+from xapers.parser import ParserBase, ParseError
+from helper import call_cmd
 
-from pipes import quote
-from subprocess import check_output
 
 class Parser(ParserBase):
     def extract(self):
-        path = quote(self.path)
+        out, err, rval = call_cmd(['pdftotext', self.path, '-'])
 
-        cmd = ['pdftotext', path, '-']
+        if rval != 0:
+            msg = 'pdftotext returned with exit code %d.\n%s' % (rval, err)
+            raise ParseError(msg)
 
-        text = check_output(' '.join(cmd), shell=True, stderr=open('/dev/null','w'))
-
-        return text
+        return out
