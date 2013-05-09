@@ -38,6 +38,10 @@ def parse_file(path):
     if not os.path.isfile(path):
         raise ParseError("File '%s' is not a regular file." % path)
 
+    _, fileext = os.path.splitext(path)
+    if fileext.lower() == '.pdf':  # prevent this for anything not pdf for now
+        raise ParseError("File '%s' is not a PDF." % path)
+
     try:
         text = pmod(path).extract()
     except Exception, e:
