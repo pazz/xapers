@@ -2,7 +2,7 @@ import re
 from urlparse import urlparse
 
 import xapers.sources
-from parser import parse_file
+from xapers.parsers import parse_file
 
 ##################################################
 

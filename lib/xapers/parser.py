@@ -21,27 +21,3 @@ class ParserBase():
 
     def extract(self):
         pass
-
-##################################################
-
-def parse_file(path):
-    # FIXME: determine mime type
-    mimetype = 'pdf'
-
-    
-    # TODO: use magic (libfile) to extract mimetype, look up corresponding
-    # parser in a local dict
-    _, fileext = os.path.splitext(path)
-    if fileext.lower() == '.pdf':  # prevent this for anything not pdf for now
-        try:
-            mod = __import__('xapers.parsers.' + mimetype, fromlist=['Parser'])
-            pmod = getattr(mod, 'Parser')
-        except ImportError:
-            raise ParseError("Unknown parser '%s'." % mimetype)
-
-        try:
-            text = pmod(path).extract()
-            return text
-        except Exception, e:
-            raise ParseError("Could not parse file: %s" % e)
-

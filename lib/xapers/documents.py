@@ -22,7 +22,7 @@ import os
 import shutil
 import xapian
 
-from parser import parse_file
+from xapers.parsers import parse_file
 from source import get_source, scan_bibentry_for_sources
 from bibtex import Bibtex
 
