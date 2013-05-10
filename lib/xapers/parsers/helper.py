@@ -1,3 +1,4 @@
+import os
 import subprocess
 
 
@@ -31,3 +32,14 @@ def call_cmd(cmdlist, stdin=None):
         ret = -1
 
     return out, err, ret
+
+
+def magic_mimetype(path):
+    abspath = os.path.abspath(path)
+    out, err, rval = call_cmd(['file', '-b', '--mime-type', abspath])
+    return out.strip()
+
+def magic_encoding(path):
+    abspath = os.path.abspath(path)
+    out, err, rval = call_cmd(['file', '-b', '--mime-encoding', abspath])
+    return out.strip()
