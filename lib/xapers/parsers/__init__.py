@@ -1,6 +1,7 @@
 import os
 from ..parser import ParseError
 from .pdf import Parser as PDFParser
+from .helper import magic_mimetype, magic_encoding
 
 DOCUMENT_PARSERS = {
     'application/pdf': PDFParser,
@@ -8,17 +9,16 @@ DOCUMENT_PARSERS = {
 
 
 def parse_file(path):
-    # FIXME: determine mime type
-    mimetype = 'application/pdf'
+    text = ''
+    try:
+        mimetype = magic_mimetype(path)
+    except OSError:
+        raise ParseError('Could not determine mimetype for %s' % path)
 
-
-    # TODO: use magic (libfile) to extract mimetype, look up corresponding
-    # parser in a local dict
-    _, fileext = os.path.splitext(path)
-    if fileext.lower() == '.pdf':  # prevent this for anything not pdf for now
+    if mimetype == 'application/pdf':  # prevent this for anything not pdf for now
         parser = DOCUMENT_PARSERS[mimetype]
         try:
-            text = parser(path).extract()
-            return text
+            text = parser(path).extract()  #TODO: give encoding to parser as hint
         except Exception, e:
             raise ParseError("Could not parse file: %s" % e)
+    return text
