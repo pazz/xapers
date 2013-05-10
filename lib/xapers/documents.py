@@ -23,7 +23,7 @@ import shutil
 import xapian
 
 from parser import parse_file
-from source import Sources
+from source import Sources,get_source, scan_bibentry_for_sources
 from bibtex import Bibtex
 
 ##################################################
@@ -192,7 +192,7 @@ class Document():
         if prefix:
             term_gen.index_text(text, 1, prefix)
         term_gen.index_text(text)
-            
+
     # return a list of terms for prefix
     # FIXME: is this the fastest way to do this?
     def _get_terms(self, prefix):
