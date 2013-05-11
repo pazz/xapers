@@ -1,13 +1,8 @@
-import os
-
 ##################################################
 
 class ParseError(Exception):
     """Base class for Xapers parser exceptions."""
-    def __init__(self, msg):
-        self.msg = msg
-    def __str__(self):
-        return self.msg
+    pass
 
 ##################################################
 
