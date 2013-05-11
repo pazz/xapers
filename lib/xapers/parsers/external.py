@@ -9,7 +9,7 @@ class SubprocessDocParser(DocParser):
         :param totext_cmd: command (list) to extract the text off a document.
         :param metadata_cmd: shell command used to read a documents metadata.
                            
-        In both parameters, the string "%{PATH}" will be substituted.
+        In both parameters, the string "{PATH}" will be substituted.
         """
         self.totext_cmd = totext_cmd
         self.metadata_cmd = metadata_cmd
@@ -29,7 +29,5 @@ class SubprocessDocParser(DocParser):
             out, err, rval = call_cmd(cmd)
             if rval != 0:
                 raise ParseError(err)
-            match = re.match(self.metadata_re, out)
-            if match:
-                result = match.groups()
+            result = dict(re.findall(self.metadata_re, out))
         return result
