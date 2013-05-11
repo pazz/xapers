@@ -1,10 +1,9 @@
-import os
 from ..parser import ParseError
-from .pdf import Parser as PDFParser
+from .external import SubprocessDocParser
 from .helper import magic_mimetype, magic_encoding
 
 DOCUMENT_PARSERS = {
-    'application/pdf': PDFParser(),
+    'application/pdf': SubprocessDocParser(['pdftotext', '{PATH}', '-']),
 }
 
 
