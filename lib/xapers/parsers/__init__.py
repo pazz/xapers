@@ -3,7 +3,9 @@ from .external import SubprocessDocParser
 from .helper import magic_mimetype, magic_encoding
 
 DOCUMENT_PARSERS = {
-    'application/pdf': SubprocessDocParser(['pdftotext', '{PATH}', '-']),
+    'application/pdf': SubprocessDocParser(['pdftotext', '{PATH}', '-'],
+                                           ['pdfinfo', '{PATH}'],
+                                           r'(.*?): *(.*)\n'),
     'application/postscript': SubprocessDocParser(['ps2txt', '{PATH}']),
 }
 
