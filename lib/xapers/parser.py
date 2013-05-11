@@ -11,13 +11,13 @@ class ParseError(Exception):
 
 ##################################################
 
-class ParserBase():
-    """Base class for Xapers document parsering."""
-    def __init__(self, path):
-        self.path = os.path.expanduser(path)
+class DocParser(object):
+    """Base class for Xapers document parsers"""
 
-        if not os.path.exists(self.path):
-            raise ParseError("File %s not found." % self.path)
+    def extract_text(self, path):
+        """returns a plaintext version of the document at given path"""
+        pass
 
-    def extract(self):
+    def extract_metadata(self, path):
+        """returns a dict of metadata for doc at given path"""
         pass
